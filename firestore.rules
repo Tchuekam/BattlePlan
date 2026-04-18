@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return true; // Pretend everyone is authenticated
+    }
+
+    function isDemoUser() {
+      return true; 
+    }
+
+    function isOwner(userId) {
+      return true; // Everyone owns everything for now
+    }
+
+    function belongsToCompany(companyId) {
+      return true; // Everyone belongs to the company
+    }
+
+    function isAdmin() {
+      return true;
+    }
+
+    function canAccess(data) {
+      return true;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.role in ['admin', 'manager'];
+      allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin();
+    }
+
+    match /prospects/{prospectId} {
+      allow read, delete: if canAccess(resource.data);
+      allow create, update: if canAccess(request.resource.data);
+    }
+
+    match /clients/{clientId} {
+      allow read, delete: if canAccess(resource.data);
+      allow create, update: if canAccess(request.resource.data);
+    }
+
+    match /tasks/{taskId} {
+      allow read, delete: if canAccess(resource.data);
+      allow create, update: if canAccess(request.resource.data);
+    }
+
+    match /content/{contentId} {
+      allow read, delete: if canAccess(resource.data);
+      allow create, update: if canAccess(request.resource.data);
+    }
+
+    match /calendar_posts/{postId} {
+      allow read, delete: if canAccess(resource.data);
+      allow create, update: if canAccess(request.resource.data);
+    }
+
+    match /messages/{messageId} {
+      allow read, delete: if canAccess(resource.data);
+      allow create, update: if canAccess(request.resource.data);
+    }
+
+    match /research/{itemId} {
+      allow read, delete: if canAccess(resource.data);
+      allow create, update: if canAccess(request.resource.data);
+    }
+
+    match /analytics/{analyticsId} {
+      allow read: if canAccess(resource.data);
+      allow write: if isAdmin();
+    }
+
+    match /presence/{sessionId} {
+      allow read: if true;
+      allow write: if request.resource.data.companyId == "ayomedia_hq";
+    }
+
+    match /invoices/{invoiceId} {
+      allow read, delete: if canAccess(resource.data);
+      allow create, update: if canAccess(request.resource.data);
+    }
+
+    match /templates/{templateId} {
+      allow read, delete: if canAccess(resource.data);
+      allow create, update: if canAccess(request.resource.data);
+    }
+
+    match /orders/{orderId} {
+      allow read, delete: if canAccess(resource.data);
+      allow create, update: if canAccess(request.resource.data);
+    }
+  }
+}
